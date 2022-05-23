@@ -1,0 +1,43 @@
+name: CI
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  main_job:
+    name: QA tests
+    runs-on: ubuntu-latest
+    env:
+      COMPOSER_FLAGS: "--ansi --quiet --no-interaction --no-progress --prefer-dist --optimize-autoloader"
+      PHP_EXTENSIONS: mbstring, xml, mysql, gd, opcache, json, zlib
+      PHP_VERSION: '8.0'
+    steps:
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+          tools: composer:v2
+          ini-values: opcache.enable_cli=1,display_errors=true,error_reporting=E_ALL
+
+      - name: Checkout Drupal
+        uses: actions/checkout@v3
+        with:
+          repository: drupal/drupal
+          ref: 9.3.x
+
+      - name: Install Drupal dependencies
+        run: composer --no-interaction --no-progress --prefer-dist --optimize-autoloader install
+
+      - name: Install phpstan and its extensions
+        run: composer --no-interaction --no-progress --prefer-dist --optimize-autoloader require phpstan/phpstan mglaman/phpstan-drupal phpstan/extension-installer
+
+      - name: Checkout test module
+        uses: actions/checkout@v3
+        with:
+          path: modules/test_module/
+
+      - name: Static code analysis
+        run: ./vendor/bin/phpstan --configuration=./modules/test_module/phpstan.neon analyze  ./modules/test_module
