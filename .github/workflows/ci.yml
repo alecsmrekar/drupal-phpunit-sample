@@ -9,7 +9,6 @@ jobs:
     name: QA tests
     runs-on: ubuntu-latest
     env:
-      COMPOSER_FLAGS: "--ansi --quiet --no-interaction --no-progress --prefer-dist --optimize-autoloader"
       PHP_EXTENSIONS: mbstring, xml, mysql, gd, opcache, json, zlib
       PHP_VERSION: '8.0'
     steps:
@@ -26,18 +25,13 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: drupal/drupal
-          ref: 9.3.x
+          ref: 9.3.13
 
       - name: Install Drupal dependencies
-        run: composer --no-interaction --no-progress --prefer-dist --optimize-autoloader install
+        run: composer --no-interaction install
 
       - name: Install phpstan and its extensions
-        run: composer --no-interaction --no-progress --prefer-dist --optimize-autoloader require phpstan/phpstan mglaman/phpstan-drupal phpstan/extension-installer
-
-      - name: Checkout test module
-        uses: actions/checkout@v3
-        with:
-          path: modules/test_module/
+        run: composer --no-interaction require phpstan/phpstan
 
       - name: Static code analysis
-        run: ./vendor/bin/phpstan --configuration=./modules/test_module/phpstan.neon analyze  ./modules/test_module
+        run: ./vendor/bin/phpstan -vvv analyze ./core/modules/language/src/Entity
