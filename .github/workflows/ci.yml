@@ -19,7 +19,7 @@ jobs:
           extensions: ${{ env.PHP_EXTENSIONS }}
           coverage: "none"
           tools: composer:v2
-          ini-values: opcache.enable_cli=1,display_errors=true,error_reporting=E_ALL
+          ini-values: display_errors=true,error_reporting=E_ALL
 
       - name: Checkout Drupal
         uses: actions/checkout@v3
